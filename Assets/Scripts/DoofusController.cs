@@ -1,16 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class DoofusController : MonoBehaviour
 {
-    private float speed;
-
-    void Start()
-    {
-        GameData gameData = GameDataLoader.LoadGameData();
-        speed = gameData.player_data.speed;
-    }
+    public float speed;
 
     void Update()
     {
