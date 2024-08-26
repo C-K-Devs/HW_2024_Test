@@ -10,7 +10,6 @@ public class ScoreManager : MonoBehaviour
 
     void Awake()
     {
-        // Ensure there is only one instance of the ScoreManager
         if (instance == null)
         {
             instance = this;
@@ -21,6 +20,7 @@ public class ScoreManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
 
     // Method to increase the score
     public void IncreaseScore()
@@ -34,7 +34,7 @@ public class ScoreManager : MonoBehaviour
     {
         if (scoreText != null)
         {
-            scoreText.text = "Score: " + score.ToString();
+            scoreText.text = "Score : " + score.ToString();
         }
     }
 
@@ -43,5 +43,10 @@ public class ScoreManager : MonoBehaviour
     {
         score = 0;
         UpdateScoreText();
+    }
+
+    public int GetScore()
+    {
+        return score;
     }
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class DoofusController : MonoBehaviour
 {
@@ -24,6 +25,11 @@ public class DoofusController : MonoBehaviour
                 currentPulpit = other; // Update the currently active Pulpit
             }
         }
+
+        if (other.CompareTag("FallLimit"))
+        {
+            GameOver(); // Trigger game over when player hits falllimit
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -36,5 +42,13 @@ public class DoofusController : MonoBehaviour
                 currentPulpit = null;
             }
         }
+    }
+
+    public void GameOver()
+    {
+        int finalScore = ScoreManager.instance.GetScore();
+        PlayerPrefs.SetInt("FinalScore", finalScore);
+
+        SceneManager.LoadScene("GameOverScene"); // Replace with your game over scene's name
     }
 }
