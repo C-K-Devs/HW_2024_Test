@@ -67,6 +67,13 @@ public class PulpitManager : MonoBehaviour
     {
         // Wait for a random time between minDestroyTime and maxDestroyTime
         float destroyDelay = Random.Range(minDestroyTime, maxDestroyTime);
+
+        TimerDisplay timerDisplay = pulpit.GetComponent<TimerDisplay>();
+        if (timerDisplay != null)
+        {
+            timerDisplay.StartTimer(destroyDelay);
+        }
+
         yield return new WaitForSeconds(destroyDelay);
 
         // Destroy the pulpit
