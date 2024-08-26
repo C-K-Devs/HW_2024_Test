@@ -1,14 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
-using System.IO;
 
 public class PulpitSpawner : MonoBehaviour
 {
     public GameObject pulpitPrefab;
-    private float minTime, maxTime, spawnTime;
-    private GameObject currentPulpit, nextPulpit;
+    private float minTime, maxTime;
+    private GameObject currentPulpit, previousPulpit;
 
     private void Start()
     {
@@ -18,49 +15,57 @@ public class PulpitSpawner : MonoBehaviour
 
     private void LoadPulpitData()
     {
-        string json = File.ReadAllText(Application.dataPath + "/Resources/doofus_diary.json");
-        PulpitData data = JsonUtility.FromJson<PulpitData>(json);
-        minTime = data.pulpit_data.min_pulpit_destroy_time;
-        maxTime = data.pulpit_data.max_pulpit_destroy_time;
-        spawnTime = data.pulpit_data.pulpit_spawn_time;
+        GameData gameData = GameDataLoader.LoadGameData();
+        minTime = gameData.pulpit_data.min_pulpit_destroy_time;
+        maxTime = gameData.pulpit_data.max_pulpit_destroy_time;
     }
 
     private IEnumerator SpawnPulpits()
     {
+        Vector3 spawnPosition = new Vector3(0, 0, 0); // Initial spawn position
+
         while (true)
         {
+            // Instantiate a new Pulpit before destroying the previous one
             if (currentPulpit != null)
             {
-                Destroy(currentPulpit, Random.Range(minTime, maxTime));
-            }
+                previousPulpit = currentPulpit;
+                float destroyTime = Random.Range(minTime, maxTime); // Random destroy time between minTime and maxTime
+                currentPulpit = Instantiate(pulpitPrefab, spawnPosition, Quaternion.identity);
+                spawnPosition = GenerateAdjacentPosition(currentPulpit.transform.position);
 
-            currentPulpit = Instantiate(pulpitPrefab, GeneratePosition(), Quaternion.identity);
-            yield return new WaitForSeconds(spawnTime);
+                // Start destroying the previous Pulpit after the new Pulpit is created
+                Destroy(previousPulpit, destroyTime); // Destroy previous pulpit after the calculated destroy time
+                yield return new WaitForSeconds(destroyTime); // Wait for the destroy time before continuing the loop
+            }
+            else
+            {
+                // Initial case: No previous Pulpit, just create the first one
+                currentPulpit = Instantiate(pulpitPrefab, spawnPosition, Quaternion.identity);
+                spawnPosition = GenerateAdjacentPosition(currentPulpit.transform.position);
+                yield return new WaitForSeconds(Random.Range(minTime, maxTime)); // Wait for a random destroy time
+            }
         }
     }
 
-    private Vector3 GeneratePosition()
+    private Vector3 GenerateAdjacentPosition(Vector3 previousPosition)
     {
-        Vector3 randomPos = new Vector3(
-            Random.Range(-9, 9),
-            0,
-            Random.Range(-9, 9)
-        );
+        Vector3[] possibleOffsets = new Vector3[]
+        {
+            new Vector3(9, 0, 0),   // Right
+            new Vector3(-9, 0, 0),  // Left
+            new Vector3(0, 0, 9),   // Forward
+            new Vector3(0, 0, -9)   // Backward
+        };
 
-        return randomPos;
+        Vector3 newPosition;
+        do
+        {
+            Vector3 offset = possibleOffsets[Random.Range(0, possibleOffsets.Length)];
+            newPosition = previousPosition + offset;
+        }
+        while (newPosition == previousPosition); // Ensure the new position is different from the previous one
+
+        return newPosition;
     }
-}
-
-[System.Serializable]
-public class PulpitData
-{
-    public PulpitInfo pulpit_data;
-}
-
-[System.Serializable]
-public class PulpitInfo
-{
-    public float min_pulpit_destroy_time;
-    public float max_pulpit_destroy_time;
-    public float pulpit_spawn_time;
 }
